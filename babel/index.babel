@@ -1,0 +1,211 @@
+const url =
+  "https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json";
+
+// main svg sizing
+const paddingTop = 110;
+const paddingBottom = 70;
+const paddingLeft = 110;
+const paddingRight = 60;
+const area = 1048;
+const w = paddingLeft + paddingRight + area;
+const h = 520;
+
+// create main svg
+const svg = d3
+  .select("body")
+  .append("svg")
+  .attr("id", "main-svg")
+  .attr("width", w)
+  .attr("height", h);
+
+// create tooltip element
+const tooltip = d3
+  .select("body")
+  .append("div")
+  .attr("id", "tooltip")
+  .style("opacity", 0);
+
+// add title
+svg
+  .append("text")
+  .attr("id", "title")
+  .text("Monthly Global Land-Surface Temperature")
+  .attr("x", paddingLeft + area)
+  .attr("y", paddingTop / 2)
+  .attr("text-anchor", "end");
+
+// load in data
+const req = new XMLHttpRequest();
+req.open("GET", url, true);
+req.send();
+req.onload = function() {
+  const dataset = JSON.parse(req.responseText);
+  const baseTemp = dataset.baseTemperature;
+  const data = dataset.monthlyVariance;
+  
+  const months = ["January", "February", "March", "April", "May", "June", 
+                  "July", "August", "September", "October", "November", "December"];
+
+// create a scale to map data values to color
+// using the d3.scale.cluster library for better data grouping
+// and therefore better color representation
+  const numColors = 9;
+  const color = d3
+    .scaleCluster() 
+    .domain(data.map(d => d.variance))
+    .range(d3.schemeRdBu[numColors].reverse()) // flipping the color scheme
+  
+  
+// extending the data object for easy access later on
+  data.forEach(d => {
+    d.month = d.month - 1; // mainly to make fCC test suite pass
+    d.monthName = months[d.month];
+    d.color = color(d.variance);
+  });
+  
+// add description
+  svg
+    .append("text")
+    .attr("id", "description")
+    .text(`${data[0].year} - ${data[data.length - 1].year} | base temperature: ${baseTemp}°C`)
+    .attr("x", paddingLeft + area)
+    .attr("y", paddingTop / 2 + 25)
+    .attr("text-anchor", "end");
+
+// create scales for x data (years) and  y data (months)
+  const xScale = d3
+    .scaleLinear()
+    .domain([data[0].year, data[data.length - 1].year])
+    .rangeRound([paddingLeft, w - paddingRight]);
+  
+  const yScale = d3
+    .scaleBand()
+    .domain(months) // the string array containing all month names
+    .range([paddingTop, h - paddingBottom]);
+  
+
+// add representation for data points
+  svg
+    .selectAll("rect")
+    .data(data)
+    .enter()
+    .append("rect")
+    .attr("class", "cell")
+    .attr("x", d => xScale(d.year))
+    .attr("y", d => yScale(d.monthName))
+    .attr("width", (w - (paddingLeft + paddingRight)) / (data.length / 12))
+    .attr("height", (h - (paddingTop + paddingBottom)) / 12)
+    .attr("data-year", d => d.year)
+    .attr("data-month", d => d.month)
+    .attr("data-temp", d => d.variance + baseTemp)
+    .style("fill", d => d.color)
+    // add event listeners
+    .on("mouseover", d => {
+      tooltip
+        .style("opacity", 0.75)
+        .attr("data-year", d.year);
+      const getTooltipLeftValue = () => {
+        const posX = d3.event.pageX;
+        return posX < (w - paddingRight) ? posX + 25 + "px" : posX - 190 + "px"
+      }
+      tooltip
+        .html(formatDataHTML(d))
+        .style("top", d3.event.pageY - 70 + "px")
+        .style("left", getTooltipLeftValue())
+        .style("border", "4px solid " + d.color)
+      
+    })
+    .on("mouseout", d => {
+      tooltip
+        .style("opacity", 0);
+    });
+           
+// create HTML for the tooltip 
+  function formatDataHTML(d) {
+    const fTemp = d3.format(".2f");
+    const fVar = d3.format("+.2f");
+    return `<table class="tooltip-table">
+              <tr><td>${d.monthName} ${d.year}</td><th>°C</th></tr>
+              <tr><th>temperature:</th><td>${fTemp(d.variance + baseTemp)}</td></tr>
+              <tr><th>deviation:</th><td style="color:${getColor(d.variance)}">${fVar(d.variance)}</td></tr>
+            </table>`
+    function getColor (val) {
+      const v = Number(val);
+      return v > 0 ? "orange" : v < 0 ? "#3399FE" : "black";
+    }
+  }
+
+  // create x and y axes
+  const xAxis = d3
+    .axisBottom(xScale)
+    .ticks(20)
+    .tickFormat(d3.format("d"))
+    .tickPadding(8)
+  
+  const yAxis = d3
+    .axisLeft(yScale)
+    .tickPadding(8)
+
+  svg
+    .append("g")
+    .attr("transform", `translate(0, ${h - paddingBottom})`)
+    .attr("id", "x-axis")
+    .call(xAxis);
+
+  svg
+    .append("g")
+    .attr("transform", `translate(${paddingLeft}, 0)`)
+    .attr("id", "y-axis")
+    .call(yAxis);
+
+// legend setup
+  const limits = color.clusters();
+  const colors = color.range();
+  const legendX = paddingLeft;
+  const legendY = 30;
+  const legendWidth = 480;
+  const legendHeight = 55;
+  const colorWidth = legendWidth / colors.length;
+  const stripeHeight = 12;
+  const fLimit = d3.format(".2f");
+
+// create svg element to contain legend elements
+  const legend = svg
+    .append("svg")
+    .attr("id", "legend")
+    .attr("x", legendX)
+    .attr("y", legendY)
+    .attr("w", legendWidth)
+    .attr("h", legendHeight)
+  
+// create color stripe, marks and legend info
+  for (let i = 0; i < numColors; i++) {
+    legend
+      .append("rect")
+      .attr("x", colorWidth * i)
+      .attr("y", 28)
+      .attr("width", colorWidth)
+      .attr("height", stripeHeight)
+      .style("fill", d3.color(colors[i]))
+      .style("stroke", "black")
+   /* `limits` holds one less item than `numColors`
+   which is okay since the last color of the strip 
+   doesn't need an upper boundary */
+    if (i < limits.length) { 
+      legend
+        .append("text")
+        .attr("class", "legend-marks")
+        .attr("x", colorWidth * i + colorWidth)
+        .attr("y", legendHeight)
+        .attr("text-anchor", "middle")
+        .text(fLimit(limits[i]))
+    }
+  }
+    legend
+      .append("text")
+      .attr("class", "legend-info")
+      .attr("x", legendWidth / 2)
+      .attr("y", 16)
+      .attr("text-anchor", "middle")
+      .html(`deviation from base temperature (${baseTemp}°C)`)
+};

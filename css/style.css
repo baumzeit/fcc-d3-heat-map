@@ -1,0 +1,73 @@
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  background: #ddd;
+}
+
+#title {
+  font-family: arial, sans-serif;
+  font-size: 1.6em;
+}
+
+#description {
+  font-family: arial, sans-serif;
+  font-size: 1em;
+}
+
+#tooltip {
+  position: absolute;
+  width: 140px;
+  padding: 6px 10px;
+  font-family: arial, sans-serif;
+  font-size: 0.8em;
+  background: #fff;
+  border-radius: 4px;
+  pointer-events: none;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: border-color 250ms ease-in;
+}
+.tooltip-table {
+  width: 100%;
+}
+/* selects all elements of the first table row */
+.tooltip-table tr:first-child * { 
+  padding-bottom: 7px;
+}
+.tooltip-table td {
+  text-align: right;
+  font-weight: bold;
+}
+.tooltip-table th {
+  text-align: right;
+  font-weight: normal;
+  padding-right: 8px;
+}
+
+#main-svg {
+  background-color: #fafafa;
+  opacity: 0.9;
+  box-shadow: 1px 2px 40px -2px #111;
+  overflow: visible;
+  cursor: crosshair;
+}
+
+#x-axis text,
+#y-axis text{
+  font-family: arial, serif-sans;
+  font-size: 1.1em;
+  opacity: 0.85;
+}
+
+.legend-marks {
+  font-family: verdana, sans-serif;
+  font-size: 0.65em;
+}
+
+.legend-info {
+  font-family: arial, sans-serif;
+  font-size: 0.9em;
+}
