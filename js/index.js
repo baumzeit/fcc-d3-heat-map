@@ -178,7 +178,7 @@ req.onload = function() {
     .axisBottom(xScale)
     .ticks(20)
     .tickFormat(d3.format('d'))
-    .tickPadding(8)
+    .tickPadding(6)
 
   var yAxis = d3.axisLeft(yScale).tickPadding(8)
 
