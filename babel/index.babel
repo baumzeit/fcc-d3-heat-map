@@ -106,7 +106,8 @@ req.onload = function() {
         .attr("data-year", d.year);
       const getTooltipLeftValue = () => {
         const posX = d3.event.pageX;
-        return posX < (w - paddingRight) ? posX + 25 + "px" : posX - 190 + "px"
+        const screenWidth = window.innerWidth;
+        return posX < screenWidth - 220 ? posX + 25 + "px" : posX - 190 + "px"
       }
       tooltip
         .html(formatDataHTML(d))

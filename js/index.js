@@ -135,9 +135,9 @@ req.onload = function() {
     // add event listeners
     .on('mouseover', function(d) {
       tooltip.style('opacity', 0.75).attr('data-year', d.year)
-      var getTooltipLeftValue = function getTooltipLeftValue() {
-        var posX = d3.event.pageX
-        return posX < w - paddingRight ? posX + 25 + 'px' : posX - 190 + 'px'
+      var posX = d3.event.pageX;
+      var screenWidth = window.innerWidth;
+        return posX < screenWidth - 220 ? posX + 25 + "px" : posX - 190 + "px"
       }
       tooltip
         .html(formatDataHTML(d))
