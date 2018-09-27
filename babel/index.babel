@@ -183,6 +183,7 @@ req.onload = function() {
   for (let i = 0; i < numColors; i++) {
     legend
       .append("rect")
+      .attr('class', 'legend-rect')
       .attr("x", colorWidth * i)
       .attr("y", 28)
       .attr("width", colorWidth)
