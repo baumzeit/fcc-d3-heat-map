@@ -55,11 +55,16 @@ body {
   cursor: crosshair;
 }
 
+#x-axis,
+#y-axis {
+  shape-rendering: crispEdges;
+}
+
 #x-axis text,
-#y-axis text{
+#y-axis text {
   font-family: arial, serif-sans;
   font-size: 1.1em;
-  opacity: 0.85;
+  opacity: 0.95;
 }
 
 .legend-marks {
@@ -70,4 +75,8 @@ body {
 .legend-info {
   font-family: arial, sans-serif;
   font-size: 0.9em;
+}
+
+.legend-rect {
+  shape-rendering: crispEdges;
 }
